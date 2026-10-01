@@ -11,7 +11,7 @@ Worldwide remote-job research app using NYSE.csv and otherExchanges.csv as its s
 - Remote and hybrid listings with description, original employer link, location/restriction evidence, inferred title seniority, employer industry when known and salary only when disclosed.
 - Search and filters for keyword, location, level, industry, employment, salary/currency/period and first-seen age.
 - PDF, DOCX and TXT resume and cover-letter parsing, private browser persistence, deletion and explainable skill-overlap suggestions.
-- Interactive operating-cost model and detailed [cost analysis](docs/cost-analysis.md). Recommended paid launch price: $14.99/month or $119.99/year for the planned iOS launch, after at least 1,000 active remote postings and production readiness are sustained.
+- Interactive iOS-only, web + iOS and web-only operating-cost model and detailed [cost analysis](docs/cost-analysis.md). Recommended paid launch price: $14.99/month or $119.99/year for the planned iOS launch, after at least 1,000 active remote postings and production readiness are sustained.
 
 ## Honest limitations
 

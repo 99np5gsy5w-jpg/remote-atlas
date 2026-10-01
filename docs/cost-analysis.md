@@ -73,17 +73,75 @@ A paid service needs authentication, private document storage, user-level access
 | Collection contingency | $40 | Planning reserve |
 | Public GitHub crawler | $0 | Standard public runners within limits |
 | Variable services | $0.10/user | Reserve, not a per-match charge |
-| Core maintenance | $1,200 | 16 hours × $75/hour |
+| Crawler and backend maintenance | $900 | 12 hours × $75/hour |
+| Customer web-app maintenance (web + iOS only) | $300 | 4 hours × $75/hour |
 | Additional iOS maintenance | $450 | 6 hours × $75/hour |
 | Apple Developer Program allocation | $8.25 | $99/year; shared across apps |
 
 Sources: [Workers](https://developers.cloudflare.com/workers/platform/pricing/), [Supabase](https://supabase.com/pricing), [Resend](https://resend.com/pricing), [Apple membership](https://developer.apple.com/programs/whats-included/).
 
-Fixed infrastructure is **$112/month**. Including core maintenance, iOS maintenance and Apple membership gives **$1,770.25/month fixed cost**. At 1,000 subscribers, add $100 variable reserve: **$1,870.25 before storefront/payment fees**. If using private GitHub runners in the base case, add $4.20. An existing Apple membership adds $0 incremental membership cost; $8.25 here is an allocation, not a second account fee.
+For the **web + iOS** scenario, fixed infrastructure is **$112/month**. Including crawler/backend maintenance, web-app maintenance, iOS maintenance and Apple membership gives **$1,770.25/month fixed cost**. At 1,000 subscribers, add $100 variable reserve: **$1,870.25 before storefront/payment fees**. If using private GitHub runners in the base case, add $4.20. An existing Apple membership adds $0 incremental membership cost; $8.25 here is an allocation, not a second account fee.
 
-iOS maintenance covers OS/SDK changes, device testing, accessibility, release preparation, subscription issues and TestFlight/App Store review iterations. A reasonable sensitivity is 4–12 additional hours/month ($300–$900), separate from scraper maintenance. Hardware is not in the recurring base: budget $500–$1,500 one time for test devices if suitable devices are unavailable, plus a compatible Mac if needed. These are planning allowances, not device quotes. Use existing hardware and local Xcode builds first; paid macOS CI and third-party subscription tooling are optional and not included.
+iOS maintenance covers OS/SDK changes, device testing, accessibility, release preparation, subscription issues and TestFlight/App Store review iterations. A reasonable sensitivity is 4–12 additional hours/month ($300–$900), separate from crawler/backend and customer web-app maintenance. Hardware is not in the recurring base: budget $500–$1,500 one time for test devices if suitable devices are unavailable, plus a compatible Mac if needed. These are planning allowances, not device quotes. Use existing hardware and local Xcode builds first; paid macOS CI and third-party subscription tooling are optional and not included.
 
-## App Store fees and break-even
+## iOS app only: separate launch scenario
+
+**An iOS-only paid product is the recommended first production scope.** Keep the existing free prototype for validation; ship the native app with a shared server-side crawler and catalog API. No customer web app or web checkout is needed. A small privacy/support/marketing page remains within the hosting allowance. The scraper cannot run reliably every day on each customer’s iPhone, so removing the web app does not remove collection, database, authentication, entitlement checks or backend costs.
+
+To make the comparison explicit, the original 16-hour core-maintenance allowance is now split into **12 hours for the crawler/backend and four hours for the customer web app**. iOS-only removes those four web hours ($300/month); its six iOS hours remain. This split is a planning assumption, not a measured saving. The underlying infrastructure allowance stays the same because shared data services still exist. Push notifications could later reduce email use, but no speculative email saving is assumed.
+
+| Recurring iOS-only cost | Monthly | Yearly |
+|---|---:|---:|
+| Infrastructure and reserves, before per-user reserve | $112.00 | $1,344.00 |
+| Apple membership allocation | $8.25 | $99.00 |
+| Crawler/backend maintenance: 12 h × $75 | $900.00 | $10,800.00 |
+| iOS maintenance: 6 h × $75 | $450.00 | $5,400.00 |
+| **Fixed budget, before subscribers and Apple commission** | **$1,470.25** | **$17,643.00** |
+
+Add **$0.10 per subscriber per month** and Apple’s commission on sales. Services and reserves excluding labor and commission are $120.25/month with zero subscribers, or **$220.25/month at 1,000 subscribers**. These amounts include contingency reserves, not just vendor invoices. Founder-performed maintenance can reduce cash payments, but its time is still a cost. Existing Apple membership adds no new membership fee; subtract the $8.25 allocation when modeling incremental cash. No separate Stripe or recurring iOS hosting fee is added; backend hosting is already counted.
+
+At **1,000 subscribers, all paying $14.99 monthly**, steady usage for 12 months:
+
+| Product / commission | Total/month including labor and fees | Total/year | Monthly-plan break-even |
+|---|---:|---:|---:|
+| **iOS only, Apple 15%** | **$3,818.75** | **$45,825.00** | **117 subscribers** |
+| iOS only, Apple 30% | $6,067.25 | $72,807.00 | 142 subscribers |
+| Web + iOS, all purchases through Apple at 15% | $4,118.75 | $49,425.00 | 141 subscribers |
+| Web + iOS, all purchases through Apple at 30% | $6,367.25 | $76,407.00 | 171 subscribers |
+| Web only, modeled Stripe fees | $2,251.64 | $27,019.68 | 94 subscribers |
+
+The difference between iOS-only and web + iOS is **$300/month or $3,600/year** under these assumptions. Web-only has different storefront fees, so its lower total is not a pure engineering comparison. The web + iOS scenarios above assume all purchases occur on iOS; a real web/iOS purchase mix would change fees.
+
+If all 1,000 iOS-only subscribers choose **$119.99 annually**, the monthly-equivalent budget is **$3,070.13 at 15%** or **$4,570.00 at 30%**, and break-even is **176 or 214 annual subscribers**, respectively. At a 50/50 monthly/annual mix, iOS-only break-even is **140 at 15%** or **171 at 30%**. Annual-plan costs and revenue are amortized for comparison; subscriptions are paid up front. These are budget scenarios, not subscriber-growth forecasts, and exclude acquisition, tax, refunds and initial development.
+
+## Projected profits
+
+**Profit here means operating revenue minus the modeled recurring costs**, including maintenance labor, reserves, per-user services and storefront/payment fees. It is before tax, refunds, initial engineering and any owner compensation beyond the maintenance allowance. Marketing is **$0 in the base tables**; this is not an assumption that customers can be acquired for free. The calculator has a monthly marketing-budget input that reduces profit and raises break-even. There is no customer-demand evidence yet, so these are conditional projections rather than a forecast of likely sales.
+
+For **iOS only, $14.99/month and Apple at 15%**, holding the subscriber count steady:
+
+| Paying subscribers | Revenue/month | Cost/month | Operating profit/month | Operating profit/year |
+|---|---:|---:|---:|---:|
+| 100 | $1,499.00 | $1,705.10 | **−$206.10** | **−$2,473.20** |
+| 250 | $3,747.50 | $2,057.38 | $1,690.13 | $20,281.50 |
+| 500 | $7,495.00 | $2,644.50 | $4,850.50 | $58,206.00 |
+| 1,000 | $14,990.00 | $3,818.75 | **$11,171.25** | **$134,055.00** |
+
+Yearly figures use unrounded monthly calculations × 12. They assume that many paying subscribers throughout all 12 months; they are not a first-year growth forecast. The 100-subscriber case loses money after the labor allowance. At 1,000 subscribers the modeled iOS-only margin is 74.5% before omitted costs. If marketing is $500/month, profit falls to **$10,671.25/month or $128,055/year** and monthly-plan break-even rises to 156 subscribers.
+
+Comparison at **1,000 subscribers all paying monthly**, with $0 marketing:
+
+| Product / payment scenario | Operating profit/month | Operating profit/year |
+|---|---:|---:|
+| **iOS only, Apple 15%** | **$11,171.25** | **$134,055.00** |
+| iOS only, Apple 30% | $8,922.75 | $107,073.00 |
+| Web + iOS, all sales through Apple at 15% | $10,871.25 | $130,455.00 |
+| Web + iOS, all sales through Apple at 30% | $8,622.75 | $103,473.00 |
+| Web only, modeled Stripe fees | $12,738.36 | $152,860.32 |
+
+Annual subscriptions generate less monthly-equivalent revenue. With **1,000 iOS-only annual subscribers at $119.99/year**, projected profit is **$6,929.04/month equivalent or $83,148.50/year at 15%**, or **$5,429.17/month equivalent or $65,150.00/year at 30%**. Initial engineering is a separate cash outlay, so launch-year cash remaining will be lower. At scale, adjust support, collection, backend and acquisition budgets rather than assuming profit grows linearly forever. Churn and conversion still need validation.
+
+## Web + iOS: App Store fees and break-even
 
 Model StoreKit in-app subscriptions as the worldwide default. The App Store Small Business Program offers 15% commission to eligible enrolled developers; eligibility considers proceeds across associated accounts, with a $1 million threshold. Do not assume approval or eligibility from this app’s revenue alone. [Apple Small Business Program](https://developer.apple.com/app-store/small-business-program/).
 
@@ -115,9 +173,16 @@ Reuse the catalog, source integrations and matching vocabulary. Build a native i
 
 One-time planning allowances, not amounts already spent:
 
-- Shared production service and source onboarding: 120–300 hours × $75 = **$9,000–$22,500**.
-- Additional native iOS app, StoreKit integration, testing and launch materials: 80–160 hours × $75 = **$6,000–$12,000**.
-- Combined engineering: **$15,000–$34,500**, before hardware, licensed datasets, legal/privacy review or marketing. Scope and existing assets can materially change this.
+| Remaining engineering work | Hours | Allowance at $75/hour |
+|---|---:|---:|
+| Shared production backend, crawler hardening and source onboarding | 100–240 | $7,500–$18,000 |
+| Customer web app production work, if retained | 20–60 | $1,500–$4,500 |
+| Native iOS app, StoreKit, device testing and launch materials | 80–160 | $6,000–$12,000 |
+| **iOS only: backend + native app** | **180–400** | **$13,500–$30,000** |
+| Web + iOS: all three workstreams | 200–460 | $15,000–$34,500 |
+| Web only: backend + customer web app | 120–300 | $9,000–$22,500 |
+
+This refines the earlier shared-service allowance by separating 20–60 hours of customer web-app work. The iOS-only plan avoids an estimated **$1,500–$4,500** of that work. All ranges estimate work remaining after the prototype; they do not value work already completed or represent cash already spent. They exclude hardware, licensed datasets, legal/privacy review and marketing. Scope and existing assets can materially change these estimates. Use the recurring-cost table separately; do not count one-time engineering as a monthly expense.
 
 No iOS app has been built or submitted as part of this prototype. No Apple membership or subscription product has been purchased or created. The report now treats iOS as the intended launch channel.
 
@@ -125,4 +190,4 @@ No iOS app has been built or submitted as part of this prototype. No Apple membe
 
 Keep the $14.99/$119.99 recommendation for testing after the catalog meets the minimum and sustains quality. FlexJobs advertises $23.95 every four weeks, $29.85 quarterly and $71.40 annually, so our annual proposal requires demonstrable extra value. Every four weeks is not calendar monthly. If users do not value the differentiation, test a lower beta price before raising it; avoid disguising an incomplete catalog with a large raw listing count. [FlexJobs pricing](https://www.flexjobs.com/pricing).
 
-The in-app calculator now defaults to public GitHub runners and iOS at 15%, with selectable 30% and web scenarios, monthly/annual mix, collection time and maintenance hours. The 1,000-posting threshold refers to inventory; 1,000 subscribers is a separate financial scenario.
+The in-app calculator now defaults to **iOS app only**, public GitHub runners and Apple at 15%. It also shows web + iOS and web-only comparisons, selectable 30% sensitivity, monthly/annual mix, collection time, separate backend/web/iOS maintenance hours, annualized operating cost, projected profit, and a monthly marketing budget. The 1,000-posting threshold refers to inventory; 1,000 subscribers is a separate financial scenario.
