@@ -23,14 +23,15 @@ jobs:
     timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
-      - name: Expand source bundle when bootstrapping through the browser
+      - name: Apply reviewed source bundle when its checksum changes
         run: |
-          if [ ! -d scraper ] && [ -f source.zip ]; then
+          if [ -f source.zip ] && ! sha256sum --check --status .source-bundle.sha256 2>/dev/null; then
             unzip -q -o source.zip
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            sha256sum source.zip > .source-bundle.sha256
             git add .
-            git commit -m 'Expand reviewed Remote Atlas source bundle'
+            git commit -m 'Apply reviewed Remote Atlas source update'
             git push
           fi
       - uses: actions/setup-python@v5
@@ -45,8 +46,8 @@ jobs:
         id: cache
         with:
           path: var/catalog.sqlite3
-          key: catalog-v1-${{ github.run_id }}
-          restore-keys: catalog-v1-
+          key: catalog-v2-${{ github.run_id }}
+          restore-keys: catalog-v2-
       - name: Restore initial public collection state
         run: |
           if [ ! -f var/catalog.sqlite3 ] && [ -f inputs/bootstrap-state.sqlite3.gz ]; then
@@ -64,14 +65,16 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: var/catalog.sqlite3
-          key: catalog-v1-${{ github.run_id }}
+          key: catalog-v2-${{ github.run_id }}
       - run: npm ci --ignore-scripts
+      - run: node --experimental-strip-types scripts/test-costs.mjs
       - run: npx tsc --noEmit
       - run: npm run build:pages
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: pages-dist
+          retention-days: 1
       - name: Record collection health
         run: python3 scripts/health-report.py
   deploy:
