@@ -1,0 +1,87 @@
+name: Daily collection and free research preview
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      collect:
+        description: Run the full daily collection before publishing
+        type: boolean
+        default: false
+  schedule:
+    - cron: '17 7 * * *'
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: remote-atlas-daily
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand source bundle when bootstrapping through the browser
+        run: |
+          if [ ! -d scraper ] && [ -f source.zip ]; then
+            unzip -q -o source.zip
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add .
+            git commit -m 'Expand reviewed Remote Atlas source bundle'
+            git push
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Restore crawler state
+        uses: actions/cache/restore@v4
+        id: cache
+        with:
+          path: var/catalog.sqlite3
+          key: catalog-v1-${{ github.run_id }}
+          restore-keys: catalog-v1-
+      - name: Restore initial public collection state
+        run: |
+          if [ ! -f var/catalog.sqlite3 ] && [ -f inputs/bootstrap-state.sqlite3.gz ]; then
+            mkdir -p var
+            gzip -dc inputs/bootstrap-state.sqlite3.gz > var/catalog.sqlite3
+          fi
+      - run: python3 -m unittest discover -s scraper/tests -v
+      - name: Collect public employer careers feeds
+        if: github.event_name == 'schedule' || inputs.collect == true
+        run: python3 scraper/run.py --discover --max-minutes 300
+      - name: Export public catalog and collection health
+        run: python3 scripts/export-catalog.py --scheduled
+      - name: Save bounded crawler state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: var/catalog.sqlite3
+          key: catalog-v1-${{ github.run_id }}
+      - run: npm ci --ignore-scripts
+      - run: npx tsc --noEmit
+      - run: npm run build:pages
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-dist
+      - name: Record collection health
+        run: python3 scripts/health-report.py
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the free research prototype
+        id: deployment
+        uses: actions/deploy-pages@v4
