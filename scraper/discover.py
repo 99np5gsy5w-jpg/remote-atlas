@@ -1,10 +1,10 @@
-import json,re
+import hashlib,json,re
 from urllib.parse import quote,urljoin,urlsplit
 from adapters import Page,detect_ats
 from http_client import CrawlError
 
 def enrich_wikidata(http,conn):
-    """Official website candidates require exact ticker + US exchange + name overlap."""
+    """Website candidates require exact ticker and company-name overlap."""
     query='''SELECT DISTINCT ?company ?companyLabel ?ticker ?website WHERE {
       ?company p:P414 ?statement . ?statement pq:P249 ?ticker .
       ?company wdt:P856 ?website .
@@ -28,7 +28,15 @@ def enrich_wikidata(http,conn):
 def apply_seeds(conn,path):
     if not path.exists(): return
     for seed in json.loads(path.read_text()):
-        row=conn.execute('SELECT company_id FROM securities WHERE symbol=?',(seed['symbol'],)).fetchone()
+        row=conn.execute('SELECT company_id FROM securities WHERE symbol=?',(seed.get('symbol',''),)).fetchone()
+        if not row and seed.get('name'):
+            # Explicitly researched employers beyond the CSV universe, with stable IDs.
+            domain=urlsplit(seed['website']).hostname.lower().removeprefix('www.')
+            row=conn.execute("SELECT id FROM companies WHERE kind='employer_candidate' AND (lower(name)=lower(?) OR website IN (?,?,?,?))",(seed['name'],'https://'+domain,'https://'+domain+'/','https://www.'+domain,'https://www.'+domain+'/')).fetchone()
+            if not row:
+                cid=hashlib.sha256(('external:'+domain).encode()).hexdigest()[:20]
+                conn.execute("INSERT OR IGNORE INTO companies(id,name,symbols,kind,origin) VALUES(?,?,?,'employer_candidate','discovered')",(cid,seed['name'],json.dumps([seed['symbol']] if seed.get('symbol') else [])))
+                row=(cid,)
         if row:
             conn.execute('UPDATE companies SET website=?,careers_url=?,industry=?,evidence_url=?,status=CASE WHEN adapter IS NULL THEN ? ELSE status END WHERE id=?',(seed['website'],seed['careers'],seed['industry'],seed['careers'],'website_found',row[0]))
             if seed.get('adapter') and seed.get('board'):
@@ -37,12 +45,14 @@ def apply_seeds(conn,path):
 
 def discover_board(http,c):
     candidates=[c['careers_url']] if c['careers_url'] else []
-    if c['website']:
-        body,final=http.get(c['website']); found=detect_ats(final,body)
-        if found: return found
-        links=[urljoin(final,l) for l in Page(body).links if re.search(r'career|jobs|join-us|work-with',l,re.I)]
-        candidates.extend(links[:4])
     errors=[]
+    if c['website']:
+        try:
+            body,final=http.get(c['website']); found=detect_ats(final,body)
+            if found: return found
+            links=[urljoin(final,l) for l in Page(body).links if re.search(r'career|jobs|join-us|work-with',l,re.I)]
+            candidates.extend(links[:4])
+        except CrawlError as e: errors.append(str(e))
     for url in dict.fromkeys(candidates):
         try:
             body,final=http.get(url); found=detect_ats(final,body)

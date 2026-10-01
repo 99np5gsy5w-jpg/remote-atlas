@@ -3,11 +3,34 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from registry import import_registry,clean_name
 from normalize import normalize,work_mode,salary_from_text,level
-from adapters import detect_ats,greenhouse,lever,jsonld
+from adapters import detect_ats,greenhouse,lever,jsonld,workday
+from discover import apply_seeds,discover_board
+from http_client import CrawlError
 from run import save_company_jobs
 
 C={'id':'company','name':'Example Inc','symbols':'["EX"]','industry':'Software','adapter':'greenhouse','board':'example','careers_url':'https://example.com/careers','website':'https://example.com'}
 class Tests(unittest.TestCase):
+ def test_external_employer_survives_csv_reimport(self):
+  c=sqlite3.connect(':memory:');import_registry(c)
+  with tempfile.TemporaryDirectory() as folder:
+   p=Path(folder)/'seeds.json';p.write_text(json.dumps([{'name':'New Employer','website':'https://new.example','careers':'https://new.example/jobs','industry':'Software'}]))
+   apply_seeds(c,p);apply_seeds(c,p);import_registry(c)
+   self.assertEqual(c.execute("select count(*) from companies where origin='discovered'").fetchone()[0],1)
+ def test_blocked_homepage_does_not_block_careers(self):
+  class Fake:
+   def get(self,url):
+    if url==C['website']:raise CrawlError('HTTP 403')
+    return '<a href="https://jobs.lever.co/example">Jobs</a>',url
+  self.assertEqual(discover_board(Fake(),C)[:2],('lever','example'))
+ def test_workday_partial_detail_and_structured_hybrid(self):
+  class Fake:
+   deadline=None
+   def json(self,url,**kwargs):
+    if url.endswith('/jobs'):return {'total':2,'jobPostings':[{'externalPath':'/job/1','title':'Engineer'},{'externalPath':'/job/2','title':'Engineer'}]}
+    if url.endswith('/job/2'):raise CrawlError('HTTP 503')
+    return {'jobPostingInfo':{'title':'Engineer','jobReqId':'1','jobDescription':'Work with a team','location':'Remote - United States','remoteType':'Hybrid','jobRequisitionLocation':{'country':{'alpha2Code':'US'}},'endDate':'2099-01-01','canApply':True}}
+  jobs,complete=workday(Fake(),{**C,'board':'example/wd1/External'})
+  self.assertFalse(complete);self.assertEqual(len(jobs),1);self.assertEqual(jobs[0]['remoteType'],'hybrid');self.assertEqual(jobs[0]['validThrough'],'2099-01-01')
  def test_input_reconciliation(self):
   c=sqlite3.connect(':memory:');summary=import_registry(c)
   self.assertEqual(summary['inputRows'],10539);self.assertEqual(summary['uniqueSecurities'],7622);self.assertEqual(summary['etfs'],4456)

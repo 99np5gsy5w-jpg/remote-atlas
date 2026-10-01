@@ -1,108 +1,128 @@
-# Remote Atlas operating costs and subscription recommendation
+# Remote Atlas: daily collection and iOS launch economics
 
-Prepared October 1, 2026. USD. Vendor prices checked on that date; workload and labor estimates are planning assumptions, not quotes or a completed full-universe benchmark.
+Updated October 1, 2026. USD. Vendor rates were checked on this date. Workload, labor, conversion and retention figures are assumptions unless labeled as measured. No paid services have been purchased.
 
-## Recommendation
+## Recommendation and launch threshold
 
-Launch at **$14.99 per month or $119 per year**, once the collection coverage and daily freshness are reliable enough to justify charging. Annual billing is $9.92/month equivalent and saves 33.8% relative to 12 monthly payments. Keep a free limited search tier. Include unlimited ordinary searches and local document matching; avoid unlimited expensive AI rewrites in this price.
+Target **$14.99/month or $119.99/year** for the iOS launch, subject to available App Store price points and local pricing. Annual billing is approximately $10/month, a 33.3% discount. This replaces the earlier $119 annual planning figure. Keep a free limited-search tier and validate conversion before committing to the price.
 
-The current GitHub edition is a free research prototype with no checkout. It must not be represented as a production subscription service. GitHub Pages explicitly disallows using it to run commercial SaaS. Keep GitHub for source, tests and scheduled collection; move the customer-facing paid service to a suitable host when launching subscriptions.
+The user’s minimum is **1,000 active remote postings**. Count deduplicated employer postings with a description, direct link and explicit remote evidence; exclude hybrid jobs, expired jobs and listings not verified within seven days. A posting is not a guarantee of a separate headcount. Reaching this threshold is necessary, but daily reliability, useful country-specific results and sustained customer value also matter. Review collection health and sample posting links over a 14-day beta before charging; this observation period has not yet been completed.
 
-## What the input files actually contain
+The stock-exchange files are a starting inventory. Additional researched private and Nasdaq-listed employers are now included and labeled separately. Current counts are in the app’s Company coverage tab. The initial 70-role catalog was a pilot, not a proposed paid launch catalog.
 
-| Measure | Count |
+## What the files contain
+
+| Input measure | Count |
 |---|---:|
 | NYSE.csv rows | 2,917 |
 | otherExchanges.csv rows | 7,622 |
-| Total input rows retained | 10,539 |
-| Duplicate symbols across files | 2,917 |
+| Rows retained, including duplicates | 10,539 |
 | Unique securities | 7,622 |
-| Explicitly marked ETFs | 4,456 |
+| Explicit ETFs | 4,456 |
 | Non-ETF securities | 3,166 |
-| Conservatively grouped employer candidates | 2,413 |
+| Conservatively grouped employer candidates from the files | 2,413 |
 | Fund/ETF records requiring sponsor mapping | 4,724 |
 
-Every NYSE symbol appears in the other file. The files have no website or industry columns. One ETF, SVIX, has a blank company name; its Security Name supplies the missing label. Employer candidates are a name-based grouping, not a verified count of distinct operating companies. Funds are retained for sponsor resolution, not counted as thousands of separate hiring organizations.
+All NYSE symbols also occur in the other file. Neither file contains websites or industries. These are securities lists, so multiple share classes and funds do not each represent a separate hiring company. Every source row remains in the database. CSV-derived candidates and additional researched employers have distinct provenance. Full coverage of every company and fund sponsor remains incomplete.
 
-The exchange codes in these files are N, P, Z, A and F. The column named NASDAQ Symbol is not proof of Nasdaq listing: these inputs omit many Nasdaq-listed employers. Expanding coverage to those companies requires another input list. The app does not silently add unrelated employers.
+## Scraper design and measurements
 
-## Scraper design and measured evidence
+Run one shared collection daily for every app user. The scraper supports Greenhouse, Lever, Ashby, SmartRecruiters, Workday and Schema.org job pages. It records successful, partial, blocked, failed and unresolved sources; it does not bypass logins or access restrictions. HTML and Workday requests observe robots.txt. Hosts are throttled, requests have retry and size limits, and jobs disappear only after two complete successful scans or explicit expiration. Search also hides jobs unverified for seven days.
 
-Collect once for the whole app, then share that job catalog across subscribers. Do not recrawl thousands of websites for each user. Prefer employer-linked public recruiting feeds to browser automation. The implementation has adapters for Greenhouse, Lever, Ashby, SmartRecruiters, Workday and Schema.org JobPosting pages. Coverage remains incomplete; the interface shows healthy, partial, blocked, failed, unresolved and sponsor-needed records.
+Measured onboarding runs:
 
-The first broad discovery pilot processed 12 employers: 250 HTTP requests, 37.3 MB transferred and 249.3 seconds elapsed. It found one complete feed, two blocked sources and nine failures. It is a small, alphabetically selected onboarding sample, **not representative of steady-state costs or total attainable coverage**. Website discovery initially found 1,145 candidates using public Wikidata evidence. A separate measured known-feed run fetched 917 postings from three employers in 3.16 seconds with three requests and 16.99 MB transferred, yielding 70 remote postings. This favorable sample also does not establish full-universe coverage or cost. Current counts and timestamps are in the app’s Company coverage tab.
+| Sample | HTTP requests | Downloaded data | Elapsed | Result |
+|---|---:|---:|---:|---|
+| First 12-company discovery pilot | 250 | 37.3 MB | 249.3 s | 1 complete feed, 2 blocked, 9 failures |
+| Three known feeds | 3 | 17.0 MB | 3.16 s | 917 postings; 70 remote |
+| Expanded 12-employer feed check | 12 | 20.6 MB | 9.22 s | 1,488 postings before remote filtering |
 
-The crawler measures elapsed seconds, request counts, bytes and cache hits on every run. Public-feed pagination is bounded; an incomplete enumeration cannot retire missing jobs. Two complete successful scans are needed to close a disappeared posting. Failed scans preserve jobs but search hides jobs unverified for more than seven days. HTML traversal is always marked partial because unseen JavaScript or pagination can hide postings. It honors robots.txt for HTML and Workday pages, rate-limits hosts, respects Retry-After, caps responses, checks URLs and never bypasses logins, CAPTCHAs or access restrictions.
+These samples are not representative full-universe benchmarks. The expanded run included companies outside the files. It brought the exported catalog to **1,414 remote postings after suppressing five identical-content duplicates**, across 14 employers with remote results. Counts can rise or fall as jobs open and close. The snapshot is not proof of 14 days of reliability. Known public feeds are inexpensive; discovering and maintaining thousands of company integrations is the expensive work.
 
-## Daily collection model
+Large Workday boards can contain tens of thousands of on-site vacancies. Where available, the crawler uses employer-provided remote-location filters for boards larger than 2,000 jobs, labels coverage partial and preserves partial results when detail requests fail. Structured work-arrangement fields override location wording, so a hybrid job labeled “Work at Home” is not counted as remote. Large feeds have a 30-minute source budget within a 300-minute overall daily budget; other sources have five minutes. Deferred sources remain visible.
 
-Plan against 2,413 employer candidates and 30 runs/month. A useful steady-state scenario is eight HTTP requests per employer per day, or **19,304/day and 579,120/month**. This is an assumption: large Workday employers can require far more detail requests; a complete Greenhouse feed often needs one request.
+## Daily compute and hosting
 
-Budget these runner scenarios until a full benchmark replaces them:
+For planning, 2,413 starting candidates × eight requests × 30 days is **579,120 requests/month**. Additional employers increase this in proportion to their feeds. Reuse cached public responses; subscriber count does not multiply crawl volume.
 
-| Scenario | Runner minutes/day | Minutes/month | Public standard GitHub runner | Private GitHub Free runner* |
-|---|---:|---:|---:|---:|
-| Efficient feeds | 30 | 900 | $0 | $0 |
-| Base | 90 | 2,700 | $0 | $4.20 |
-| Large or slow feeds | 300 | 9,000 | $0 | $42.00 |
+| Daily runner time | Minutes/month | Public standard GitHub runner | Private GitHub Free runner* |
+|---|---:|---:|---:|
+| 30 minutes | 900 | $0 | $0 |
+| 90 minutes | 2,700 | $0 | $4.20 |
+| 300 minutes | 9,000 | $0 | $42.00 |
 
-*Private cost = max(0, monthly minutes − 2,000) × $0.006 for standard Linux 2-core. The allowance is shared across the account; if other projects consume it, the base crawl costs $16.20/month and the large case $54.00. Public standard runner minutes are free. Larger runners are charged. Store crawler state in a bounded cache and avoid accumulating daily artifacts. GitHub includes 10 GB cache/repository; additional configured cache is $0.07/GB-month and artifact storage beyond the account allowance is $0.25/GB-month. The workflow does not raise paid limits or provision larger runners.
+*Private scenario: max(0, minutes − 2,000) × $0.006, assuming the account’s full included allowance remains available. Without that allowance, the 90-minute case is $16.20/month. Larger runners are extra. GitHub includes 10 GB cache per repository; configured excess cache is $0.07/GB-month, and excess artifact storage is $0.25/GB-month. The workflow uses standard public runners and does not raise paid limits. [GitHub Actions pricing](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
 
-The daily job is scheduled for 07:17 UTC (3:17 a.m. New York during daylight time; 2:17 a.m. in standard time). GitHub schedules can be delayed, and inactive public repositories can have schedules disabled after 60 days. This is suitable for a prototype, not a strict freshness SLA. The job has a 300-minute collection budget and records deferred sources rather than pretending to finish them.
+The schedule is 07:17 UTC daily, with deferred sources reported after the time budget. GitHub can delay scheduled runs and disable schedules on public repositories after 60 days without activity. This does not provide a freshness SLA. [Scheduled workflow behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
 
-Optional browser fallback is not implemented or enabled in this version. At Cloudflare’s published rate, 25% of 2,413 companies × four pages × 15 browser-seconds × 30 days = 301.6 browser-hours/month; after 10 included hours, browser time is about **$26.25/month**, plus Workers, concurrency, and any external service costs. This does not guarantee access to blocked sites. Apify Starter is an alternative with $19/month prepaid usage and $0.20 per GB-RAM-hour; its credits are consumed, so do not add the $19 minimum twice. Licensed data/enrichment vendors are a separate option requiring a quote or plan, not an assumed free capability.
+The **free prototype can cost $0 in direct GitHub hosting and runner charges** within limits. GitHub Pages does not permit commercial SaaS hosting. Keep GitHub for code and collection; a paid iOS product should use a production catalog API and backend on a suitable host. [Pages limits](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits).
 
-## Other app costs
+Optional browser fallback is not implemented. As a sensitivity: 25% of 2,413 employers × four pages × 15 seconds × 30 days = 301.6 browser-hours/month. At Cloudflare’s published browser-time rate, after ten included hours, that is about $26.25/month plus Workers and concurrency costs. It does not guarantee access to blocked sources. Apify Starter is another option at $19/month prepaid usage and $0.20/GB-RAM-hour; do not add prepaid credits twice. Licensed data or company enrichment needs a separate quote. [Cloudflare Browser Run](https://developers.cloudflare.com/browser-run/pricing/), [Apify pricing](https://apify.com/pricing).
 
-For a paid launch with 1,000 monthly active subscribers, plan for two documents per user at 1 MB each, around 2 GB of originals plus extracted text, metadata and backups. Document parsing and vocabulary matching in this prototype run on-device, with **$0 per-match API charges**. There is no third-party model receiving resumes. The paid version needs user authentication, private object storage, per-user access policies, deletion and retention controls, and a secure subscription backend.
+## Shared backend and iOS operating costs
 
-| Expense | Base monthly budget | Basis |
+A paid service needs authentication, private document storage, user-level access controls, retention/deletion, entitlement verification, alerts and monitoring. These are future production requirements, not implemented cloud services in the prototype. The current resume and cover-letter parsing and matching run on the user’s device, so they incur no model API charges. Two 1 MB files for 1,000 users require approximately 2 GB before backups and extracted text.
+
+| Monthly expense | Base allowance | Basis |
 |---|---:|---|
-| App hosting | $5 | Cloudflare Workers paid baseline; independent account required |
-| Database, auth and private file storage | $25 | Supabase Pro starting plan; usage limits and compute apply |
-| Email | $20 | Resend Pro: 50,000/month; optional alerts are not implemented |
-| Monitoring and backup allowance | $20 | Planning allowance, not a quoted vendor bundle |
-| Domain | $2 | $24/year planning allowance; registration/TLD varies |
-| Collection contingency | $40 | Planning reserve for retries or approved external services |
-| Daily scraper compute | $4.20 | Base private-runner scenario above; public repo is $0 |
-| Variable service reserve | $0.10/subscriber | Budget reserve, not incurred by local matching |
-| Maintenance | $1,200 | 16 hours/month × $75/hour assumption |
+| Hosting/API | $5 | Cloudflare Workers paid baseline |
+| Database, authentication and private files | $25 | Supabase Pro starting plan; usage/compute limits apply |
+| Email | $20 | Resend Pro; 50,000/month |
+| Monitoring and backups | $20 | Planning reserve |
+| Domain | $2 | $24/year planning reserve |
+| Collection contingency | $40 | Planning reserve |
+| Public GitHub crawler | $0 | Standard public runners within limits |
+| Variable services | $0.10/user | Reserve, not a per-match charge |
+| Core maintenance | $1,200 | 16 hours × $75/hour |
+| Additional iOS maintenance | $450 | 6 hours × $75/hour |
+| Apple Developer Program allocation | $8.25 | $99/year; shared across apps |
 
-Base fixed infrastructure is **$116.20/month** using the private-runner scenario or **$112/month** with public runners. At 1,000 subscribers, add $100 variable reserve and $1,200 maintenance: **$1,416.20/month before payment fees and acquisition**. At the all-monthly recommended price, payment processing adds $839.64, for a total modeled operating cost of **$2,255.84/month**. Revenue would be $14,990/month and the modeled operating surplus $12,734.16 before omitted business costs. This is arithmetic, not a revenue forecast.
+Sources: [Workers](https://developers.cloudflare.com/workers/platform/pricing/), [Supabase](https://supabase.com/pricing), [Resend](https://resend.com/pricing), [Apple membership](https://developer.apple.com/programs/whats-included/).
 
-Practical ranges: a free GitHub prototype can have $0 direct hosting/runner charges within platform limits; a lean paid service might need $50–$250/month infrastructure; a broader catalog with licensed data, browsers or heavier AI could need $250–$1,500+ before labor. At 8–40 maintenance hours/month and $75/hour, labor adds $600–$3,000. Add customer support, accounting, privacy/security review, insurance, tax administration, chargebacks and marketing as the business grows. Initial engineering and company-source onboarding are one-time costs: a planning allowance of 120–300 hours at $75/hour is $9,000–$22,500, excluding unusually difficult sites or licensed data. No such amount has been spent by this prototype.
+Fixed infrastructure is **$112/month**. Including core maintenance, iOS maintenance and Apple membership gives **$1,770.25/month fixed cost**. At 1,000 subscribers, add $100 variable reserve: **$1,870.25 before storefront/payment fees**. If using private GitHub runners in the base case, add $4.20. An existing Apple membership adds $0 incremental membership cost; $8.25 here is an allocation, not a second account fee.
 
-## Unit economics
+iOS maintenance covers OS/SDK changes, device testing, accessibility, release preparation, subscription issues and TestFlight/App Store review iterations. A reasonable sensitivity is 4–12 additional hours/month ($300–$900), separate from scraper maintenance. Hardware is not in the recurring base: budget $500–$1,500 one time for test devices if suitable devices are unavailable, plus a compatible Mac if needed. These are planning allowances, not device quotes. Use existing hardware and local Xcode builds first; paid macOS CI and third-party subscription tooling are optional and not included.
 
-Assuming U.S. domestic web-card payments through Stripe: payment fee 2.9% + $0.30, plus recurring Billing at 0.7%. International cards, FX, tax tooling, disputes and refunds can add cost. Native app-store sales are excluded; their economics require a separate model.
+## App Store fees and break-even
 
-| Plan | Gross revenue/month equivalent | Payment fee/month equivalent | Variable reserve | Contribution/month |
+Model StoreKit in-app subscriptions as the worldwide default. The App Store Small Business Program offers 15% commission to eligible enrolled developers; eligibility considers proceeds across associated accounts, with a $1 million threshold. Do not assume approval or eligibility from this app’s revenue alone. [Apple Small Business Program](https://developer.apple.com/app-store/small-business-program/).
+
+For standard subscriptions, Apple describes 30% commission during the subscriber’s first paid year and 15% after one paid year. Small Business participants receive the 15% rate from the beginning. Taxes and adjustments affect actual proceeds. The model assumes prices before those adjustments. **Do not add Stripe charges to Apple-processed purchases.** [Apple subscription proceeds](https://developer.apple.com/app-store/subscriptions/).
+
+| Channel / plan | Gross/month equivalent | Platform fee/month | Contribution after $0.10 reserve | Subscribers to cover fixed costs |
 |---|---:|---:|---:|---:|
-| $14.99 monthly | $14.990 | $0.83964 | $0.10 | $14.05036 |
-| $119 annual | $9.91667 | $0.38200 | $0.10 | $9.43467 |
-| 50% monthly / 50% annual | $12.45333 | $0.61082 | $0.10 | $11.74251 |
+| iOS 15%, $14.99 monthly | $14.9900 | $2.2485 | $12.6415 | **141** |
+| iOS 15%, $119.99 annual | $9.9992 | $1.4999 | $8.3993 | **211** |
+| iOS 30%, $14.99 monthly | $14.9900 | $4.4970 | $10.3930 | **171** |
+| iOS 30%, $119.99 annual | $9.9992 | $2.9998 | $6.8994 | **257** |
 
-Annual fees are charged once on $119: $119 × 3.6% + $0.30 = $4.584/year. Annual revenue is recognized here at 1/12; cash collected up front is not monthly recurring cash flow.
+At a 50/50 monthly/annual mix, break-even is **169 subscribers at 15%** or **205 at 30%**. All scenarios include $1,770.25 fixed operating cost. They exclude acquisition, founder salary, taxes, refunds, initial development and scale-driven staffing.
 
-At $1,316.20 fixed operating cost (infrastructure plus maintenance), estimated break-even is **94 monthly subscribers**, **140 annual subscribers**, or **113 subscribers at a 50/50 mix**. This excludes marketing, founder compensation, taxes and one-time engineering. At the 50/50 mix, 100 subscribers produce about −$142/month, 1,000 about $10,426/month, and 10,000 about $116,109/month before scale-driven staffing and infrastructure changes; the last figure is a sensitivity calculation, not a scalable cost promise.
+At **1,000 all-monthly iOS subscribers**:
 
-Job-search subscriptions naturally churn when people find work. At $14.05 monthly contribution and an assumed 25% monthly churn, simple contribution LTV is $56.20; a 3:1 LTV/CAC target implies acquisition cost around $18.73 or less before fixed expenses. With 15–35% churn, contribution LTV ranges $93.67–$40.14. Validate with actual cohorts rather than offering lifetime or heavily discounted annual plans prematurely.
+| Scenario | Gross/month | Modeled costs including commission | Operating surplus before omitted costs |
+|---|---:|---:|---:|
+| Apple 15% | $14,990 | $4,118.75 | $10,871.25 |
+| Apple 30% | $14,990 | $6,367.25 | $8,622.75 |
 
-FlexJobs currently lists $23.95 every four weeks after its trial, $29.85 quarterly, and $71.40 annually. Every four weeks is not calendar monthly. The $119 annual recommendation is a premium to that annual plan and needs measurable value: fresh employer-direct opportunities, transparent restrictions and useful matching. Test $99 versus $119 annually and $12.99 versus $14.99 monthly after coverage is established. If that value is not demonstrated, use $9.99/month or $79/year for an early paid beta instead of claiming premium value from an incomplete catalog.
+These are calculations, not revenue forecasts. At 25% assumed monthly churn, contribution LTV is about $50.57 at 15% or $41.57 at 30%; a 3:1 LTV/CAC target implies acquisition costs below approximately $16.86 or $13.86 before fixed costs. Subscription retention is a major risk because successful job seekers often cancel.
 
-## Sources
+For comparison, web purchases modeled with Stripe domestic card fees of 2.9% + $0.30 and Billing at 0.7% produce $14.0504 monthly-plan contribution, or $9.5142 annual-plan monthly-equivalent contribution. International/FX charges, taxes and disputes are extra. A web-only operation removes the iOS labor and Apple membership allocation. [Stripe pricing](https://stripe.com/pricing).
 
-- GitHub Actions rates and allowances: https://docs.github.com/en/billing/concepts/product-billing/github-actions
-- GitHub Pages hosting limits: https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits
-- Scheduled workflows: https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
-- Cloudflare Workers: https://developers.cloudflare.com/workers/platform/pricing/
-- Cloudflare Browser Run: https://developers.cloudflare.com/browser-run/pricing/
-- D1 and R2: https://developers.cloudflare.com/d1/platform/pricing/ and https://developers.cloudflare.com/r2/pricing/
-- Supabase: https://supabase.com/pricing
-- Resend: https://resend.com/pricing
-- Apify: https://apify.com/pricing
-- Stripe Payments and Billing: https://stripe.com/pricing
-- FlexJobs: https://www.flexjobs.com/pricing
-- Employer feed documentation: https://docs.greenhouse.io/job-board.html and https://github.com/lever/postings-api
+## iOS release work and initial investment
 
-Prices are sourced above; workload, labor, conversion, retention, and reserves are explicitly modeled assumptions. The interactive Operating costs screen lets you change subscribers, runner minutes and maintenance hours.
+Reuse the catalog, source integrations and matching vocabulary. Build a native iOS experience with document import, saved searches, saved jobs, accessible filters, deep links, account deletion, and StoreKit purchase/restore flows. Validate entitlements on the backend and handle subscription renewal, expiration and refund notifications. Native features and customer utility matter for review; simply packaging the website is not sufficient. Storefront payment-link rules vary, so potential external-payment savings are not in the base model. [App Review Guidelines, sections 3.1 and 4.2](https://developer.apple.com/app-store/review/guidelines/), [Apple in-app purchases](https://developer.apple.com/in-app-purchase/).
+
+One-time planning allowances, not amounts already spent:
+
+- Shared production service and source onboarding: 120–300 hours × $75 = **$9,000–$22,500**.
+- Additional native iOS app, StoreKit integration, testing and launch materials: 80–160 hours × $75 = **$6,000–$12,000**.
+- Combined engineering: **$15,000–$34,500**, before hardware, licensed datasets, legal/privacy review or marketing. Scope and existing assets can materially change this.
+
+No iOS app has been built or submitted as part of this prototype. No Apple membership or subscription product has been purchased or created. The report now treats iOS as the intended launch channel.
+
+## Pricing validation
+
+Keep the $14.99/$119.99 recommendation for testing after the catalog meets the minimum and sustains quality. FlexJobs advertises $23.95 every four weeks, $29.85 quarterly and $71.40 annually, so our annual proposal requires demonstrable extra value. Every four weeks is not calendar monthly. If users do not value the differentiation, test a lower beta price before raising it; avoid disguising an incomplete catalog with a large raw listing count. [FlexJobs pricing](https://www.flexjobs.com/pricing).
+
+The in-app calculator now defaults to public GitHub runners and iOS at 15%, with selectable 30% and web scenarios, monthly/annual mix, collection time and maintenance hours. The 1,000-posting threshold refers to inventory; 1,000 subscribers is a separate financial scenario.

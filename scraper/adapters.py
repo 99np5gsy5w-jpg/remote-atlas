@@ -65,7 +65,8 @@ def ashby(http,c):
     out=[]
     for j in data['jobs']:
         tiers=j.get('compensation',{}).get('compensationTierSummary','') if isinstance(j.get('compensation'),dict) else ''
-        out.append(normalize(c,j.get('id') or j['jobUrl'],j['title'],j.get('descriptionPlain','')+'\n'+tiers,j.get('location'),j['jobUrl'],explicit='remote' if j.get('isRemote') else None,department=j.get('department',''),employment=j.get('employmentType',''),posted=j.get('publishedAt')))
+        desc=j.get('descriptionPlain') or j.get('descriptionHtml') or ''
+        out.append(normalize(c,j.get('id') or j['jobUrl'],j['title'],desc+'\n'+(tiers or ''),j.get('location'),j['jobUrl'],explicit='remote' if j.get('isRemote') else None,department=j.get('department',''),employment=j.get('employmentType',''),posted=j.get('publishedAt')))
     return out,True
 
 def smartrecruiters(http,c):
@@ -85,19 +86,44 @@ def smartrecruiters(http,c):
 
 def workday(http,c):
     tenant,shard,site=c['board'].split('/'); origin=f'https://{tenant}.{shard}.myworkdayjobs.com'; base=f'{origin}/wday/cxs/{tenant}/{site}'
-    out=[]; seen=set()
+    out=[]; seen=set(); facets={}; partial=False; failed=False
+    first=http.json(base+'/jobs',public_api=False,data={'appliedFacets':{},'limit':20,'offset':0,'searchText':''})
+    # Large retail boards can contain tens of thousands of on-site jobs. Use the
+    # employer's own remote-location facets, and explicitly report partial coverage.
+    def remote_locations(nodes):
+        for node in nodes:
+            if node.get('facetParameter')=='locations':
+                for value in node.get('values',[]):
+                    if re.search(r'\bremote\b|work (?:from|at) home',value.get('descriptor',''),re.I): yield value['id']
+            yield from remote_locations([n for n in node.get('values',[]) if isinstance(n,dict) and n.get('facetParameter')])
+    if first.get('total',0)>2000:
+        ids=list(remote_locations(first.get('facets',[])))
+        if ids: facets={'locations':ids}; partial=True
     for offset in range(0,10000,20):
-        data=http.json(base+'/jobs',public_api=False,data={'appliedFacets':{},'limit':20,'offset':offset,'searchText':''})
+        try:
+            data=first if offset==0 and not facets else http.json(base+'/jobs',public_api=False,data={'appliedFacets':facets,'limit':20,'offset':offset,'searchText':''})
+        except CrawlError:
+            if out: return out,False
+            raise
         if not isinstance(data.get('jobPostings'),list): raise CrawlError('Workday schema changed')
         for j in data['jobPostings']:
             path=j.get('externalPath')
             if not path or path in seen: continue
             seen.add(path)
-            d=http.json(base+path,public_api=False).get('jobPostingInfo',{})
+            try:
+                d=http.json(base+path,public_api=False).get('jobPostingInfo',{})
+                if not d.get('title') or not d.get('jobDescription'): raise CrawlError('Workday detail missing required fields')
+            except CrawlError:
+                failed=True
+                if http.deadline and __import__('time').monotonic()>http.deadline: return out,False
+                continue
+            if d.get('canApply') is False: continue
             location=d.get('location',j.get('locationsText',''))
             if d.get('additionalLocations'): location+='; '+'; '.join(d['additionalLocations'])
-            out.append(normalize(c,d.get('jobReqId',path),d.get('title',j['title']),d.get('jobDescription',''),location,f'{origin}/en-US/{site}{path}',employment=d.get('timeType',''),posted=d.get('startDate')))
-        if offset+len(data['jobPostings'])>=data.get('total',0): return out,True
+            mode=str(d.get('remoteType','')).lower()
+            country=d.get('jobRequisitionLocation',{}).get('country',{}).get('alpha2Code')
+            out.append(normalize(c,d.get('jobReqId',path),d.get('title',j['title']),d.get('jobDescription',''),location,f'{origin}/en-US/{site}{path}',explicit=mode if mode in ('remote','hybrid','on-site','onsite') else None,employment=d.get('timeType',''),posted=d.get('startDate'),country=country,valid_through=d.get('endDate')))
+        if offset+len(data['jobPostings'])>=data.get('total',0): return out,not (partial or failed)
         if not data['jobPostings']: return out,False
     return out,False
 

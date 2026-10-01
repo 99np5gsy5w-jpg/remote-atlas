@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {costs} from '../lib/cost-model.ts';
+const small=costs();
+assert.equal(small.breakEven,141);
+assert.equal(small.total,4118.75);
+assert.equal(small.fees,2248.5);
+assert.equal(costs({channel:'ios30'}).breakEven,171);
+assert.equal(costs({channel:'ios15',billing:'annual'}).breakEven,211);
+assert.ok(Math.abs(costs({channel:'web',billing:'annual',users:1}).fees-(119.99*.036+.3)/12)<1e-9);
+assert.equal(costs({privateRunner:true}).crawl,4.2);
+assert.equal(costs({channel:'web'}).apple,0);
+assert.equal(costs({channel:'web'}).iosLabor,0);
+console.log('Cost scenarios passed: Apple 15%/30%, annual billing, web-only fees, shared runner allowance.');

@@ -36,7 +36,10 @@
     "symbol": "TWLO",
     "website": "https://www.twilio.com/",
     "careers": "https://jobs.twilio.com/careers",
-    "industry": "Business software"
+    "industry": "Business software",
+    "adapter": "greenhouse",
+    "board": "twilio",
+    "evidence": "https://job-boards.greenhouse.io/twilio"
   },
   {
     "symbol": "SNOW",
@@ -77,7 +80,147 @@
   {
     "symbol": "CVS",
     "website": "https://www.cvshealth.com/",
-    "careers": "https://jobs.cvshealth.com/",
-    "industry": "Healthcare"
+    "careers": "https://cvshealth.wd1.myworkdayjobs.com/en-US/CVS_Health_Careers",
+    "industry": "Healthcare",
+    "adapter": "workday",
+    "board": "cvshealth/wd1/CVS_Health_Careers",
+    "evidence": "https://jobs.cvshealth.com/"
+  },
+  {
+    "symbol": "IOT",
+    "name": "Samsara",
+    "website": "https://www.samsara.com",
+    "careers": "https://job-boards.greenhouse.io/samsara",
+    "adapter": "greenhouse",
+    "board": "samsara",
+    "industry": "Business software",
+    "evidence": "https://job-boards.greenhouse.io/samsara"
+  },
+  {
+    "symbol": "GTLB",
+    "name": "GitLab",
+    "website": "https://about.gitlab.com",
+    "careers": "https://job-boards.greenhouse.io/gitlab",
+    "adapter": "greenhouse",
+    "board": "gitlab",
+    "industry": "Developer tools",
+    "evidence": "https://job-boards.greenhouse.io/gitlab"
+  },
+  {
+    "symbol": "COIN",
+    "name": "Coinbase",
+    "website": "https://www.coinbase.com",
+    "careers": "https://job-boards.greenhouse.io/coinbase",
+    "adapter": "greenhouse",
+    "board": "coinbase",
+    "industry": "Financial services",
+    "evidence": "https://job-boards.greenhouse.io/coinbase"
+  },
+  {
+    "symbol": "DBX",
+    "name": "Dropbox",
+    "website": "https://www.dropbox.com",
+    "careers": "https://job-boards.greenhouse.io/dropbox",
+    "adapter": "greenhouse",
+    "board": "dropbox",
+    "industry": "Business software",
+    "evidence": "https://job-boards.greenhouse.io/dropbox"
+  },
+  {
+    "symbol": "AFRM",
+    "name": "Affirm",
+    "website": "https://www.affirm.com",
+    "careers": "https://job-boards.greenhouse.io/affirm",
+    "adapter": "greenhouse",
+    "board": "affirm",
+    "industry": "Financial services",
+    "evidence": "https://job-boards.greenhouse.io/affirm"
+  },
+  {
+    "symbol": null,
+    "name": "Canonical",
+    "website": "https://canonical.com",
+    "careers": "https://job-boards.greenhouse.io/canonical",
+    "adapter": "greenhouse",
+    "board": "canonical",
+    "industry": "Cloud & cybersecurity",
+    "evidence": "https://job-boards.greenhouse.io/canonical"
+  },
+  {
+    "symbol": null,
+    "name": "Remote",
+    "website": "https://remote.com",
+    "careers": "https://job-boards.greenhouse.io/remotecom",
+    "adapter": "greenhouse",
+    "board": "remotecom",
+    "industry": "HR & payroll",
+    "evidence": "https://job-boards.greenhouse.io/remotecom"
+  },
+  {
+    "symbol": null,
+    "name": "Tailscale",
+    "website": "https://tailscale.com",
+    "careers": "https://job-boards.greenhouse.io/tailscale",
+    "adapter": "greenhouse",
+    "board": "tailscale",
+    "industry": "Cloud & cybersecurity",
+    "evidence": "https://job-boards.greenhouse.io/tailscale"
+  },
+  {
+    "name": "Zapier",
+    "website": "https://zapier.com",
+    "careers": "https://jobs.ashbyhq.com/zapier",
+    "adapter": "ashby",
+    "board": "zapier",
+    "industry": "Business software",
+    "evidence": "https://jobs.ashbyhq.com/zapier"
+  },
+  {
+    "name": "Deel",
+    "website": "https://www.deel.com",
+    "careers": "https://jobs.ashbyhq.com/deel",
+    "adapter": "ashby",
+    "board": "deel",
+    "industry": "HR & payroll",
+    "evidence": "https://jobs.ashbyhq.com/deel"
+  },
+  {
+    "name": "Kraken",
+    "website": "https://www.kraken.com",
+    "careers": "https://jobs.ashbyhq.com/kraken.com",
+    "adapter": "ashby",
+    "board": "kraken.com",
+    "industry": "Financial services",
+    "evidence": "https://jobs.ashbyhq.com/kraken.com"
+  },
+  {
+    "symbol": "CI",
+    "name": "The Cigna Group",
+    "website": "https://www.cigna.com/",
+    "careers": "https://cigna.wd5.myworkdayjobs.com/en-US/cignacareers",
+    "adapter": "workday",
+    "board": "cigna/wd5/cignacareers",
+    "industry": "Healthcare",
+    "evidence": "https://cigna.wd5.myworkdayjobs.com/en-US/cignacareers"
+  },
+  {
+    "symbol": "HUM",
+    "name": "Humana",
+    "website": "https://www.humana.com/",
+    "careers": "https://humana.wd5.myworkdayjobs.com/en-US/Humana_External_Career_Site",
+    "adapter": "workday",
+    "board": "humana/wd5/Humana_External_Career_Site",
+    "industry": "Healthcare",
+    "evidence": "https://humana.wd5.myworkdayjobs.com/en-US/Humana_External_Career_Site"
+  },
+  {
+    "symbol": "CNC",
+    "name": "Centene",
+    "website": "https://www.centene.com/",
+    "careers": "https://centene.wd5.myworkdayjobs.com/en-US/Centene_External",
+    "adapter": "workday",
+    "board": "centene/wd5/Centene_External",
+    "industry": "Healthcare",
+    "evidence": "https://centene.wd5.myworkdayjobs.com/en-US/Centene_External"
   }
 ]

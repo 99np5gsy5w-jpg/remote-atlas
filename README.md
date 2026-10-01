@@ -1,6 +1,8 @@
 # Remote Atlas
 
-Worldwide remote-job research app built from NYSE.csv and otherExchanges.csv. A free GitHub Pages prototype with a daily GitHub Actions crawler, transparent source coverage and private on-device resume/cover-letter matching.
+Worldwide remote-job research app using NYSE.csv and otherExchanges.csv as its starting inventory, expanded with researched employers beyond those files. A free GitHub Pages prototype with a daily GitHub Actions crawler, transparent source coverage and private on-device resume/cover-letter matching.
+
+[Live prototype](https://99np5gsy5w-jpg.github.io/remote-atlas/) · [Cost report](docs/cost-analysis.md)
 
 ## What works
 
@@ -9,7 +11,7 @@ Worldwide remote-job research app built from NYSE.csv and otherExchanges.csv. A 
 - Remote and hybrid listings with description, original employer link, location/restriction evidence, inferred title seniority, employer industry when known and salary only when disclosed.
 - Search and filters for keyword, location, level, industry, employment, salary/currency/period and first-seen age.
 - PDF, DOCX and TXT resume and cover-letter parsing, private browser persistence, deletion and explainable skill-overlap suggestions.
-- Interactive operating-cost model and detailed [cost analysis](docs/cost-analysis.md). Recommended paid launch price: $14.99/month or $119/year, after coverage and production readiness improve.
+- Interactive operating-cost model and detailed [cost analysis](docs/cost-analysis.md). Recommended paid launch price: $14.99/month or $119.99/year for the planned iOS launch, after at least 1,000 active remote postings and production readiness are sustained.
 
 ## Honest limitations
 
@@ -44,7 +46,7 @@ The bootstrap state contains public companies/jobs only, not user documents or s
 
 ## Add or repair a source
 
-Add a record to `scraper/seeds.json` with an existing input symbol, official website, careers URL, industry and evidence URL. For a verified recruiting board, add `adapter` and `board`. Supported boards: Greenhouse token; Lever token with optional `@eu`; Ashby token; SmartRecruiters company identifier; Workday `tenant/wdN/site`. Do not guess or silently substitute another company. Preserve the official careers evidence that establishes ownership.
+Add a record to `scraper/seeds.json` with an existing input symbol, official website, careers URL, industry and evidence URL. To add an employer outside the CSVs, include `name` and its official `website`; `symbol` is optional. External employers receive stable domain-based IDs, are preserved on CSV reimport and show “Added research” provenance. For a verified recruiting board, add `adapter` and `board`. Supported boards: Greenhouse token; Lever token with optional `@eu`; Ashby token; SmartRecruiters company identifier; Workday `tenant/wdN/site`. Do not guess or silently substitute another company. Preserve the official careers evidence that establishes ownership.
 
 Wikidata discovery requires exact ticker matching and meaningful name overlap. Treat its website matches as candidates; company career pages establish feed ownership. HTML obeys robots.txt. Documented public ATS feeds use their read-only public endpoints. No application forms are submitted.
 
@@ -52,8 +54,9 @@ Wikidata discovery requires exact ticker matching and meaningful name overlap. T
 
 ```sh
 python3 -m unittest discover -s scraper/tests -v
+node --experimental-strip-types scripts/test-costs.mjs
 npx tsc --noEmit
 npm run build:pages
 ```
 
-Tests cover inventory reconciliation, remote restrictions, title levels, salary uncertainty, feed parsing/pagination, safe description text and retirement only after two complete successful scans. No confidential user documents are used in tests.
+Tests cover cost scenarios without double-counting Apple and Stripe, external employer retention, partial Workday responses, inventory reconciliation, remote restrictions, title levels, salary uncertainty, feed parsing/pagination, safe description text and retirement only after two complete successful scans. No confidential user documents are used in tests.

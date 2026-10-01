@@ -21,6 +21,8 @@ def import_registry(conn, paths=DEFAULT_FILES):
       CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY,value TEXT);
       CREATE INDEX IF NOT EXISTS jobs_company ON jobs(company_id);
     ''')
+    if 'origin' not in {r[1] for r in conn.execute('PRAGMA table_info(companies)')}:
+        conn.execute("ALTER TABLE companies ADD COLUMN origin TEXT NOT NULL DEFAULT 'csv'")
     securities={}; counts={}
     for path in paths:
         with path.open(encoding='utf-8-sig',newline='') as source:
