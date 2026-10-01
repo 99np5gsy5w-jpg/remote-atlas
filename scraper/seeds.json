@@ -1,0 +1,83 @@
+[
+  {
+    "symbol": "NET",
+    "website": "https://www.cloudflare.com/",
+    "careers": "https://www.cloudflare.com/careers/jobs/",
+    "industry": "Cloud & cybersecurity",
+    "adapter": "greenhouse",
+    "board": "cloudflare",
+    "evidence": "https://boards.greenhouse.io/embed/job_app?for=cloudflare&token=7190309"
+  },
+  {
+    "symbol": "HUBS",
+    "website": "https://www.hubspot.com/",
+    "careers": "https://www.hubspot.com/careers/jobs",
+    "industry": "Business software",
+    "adapter": "greenhouse",
+    "board": "hubspotjobs",
+    "evidence": "https://www.hubspot.com/careers/jobs"
+  },
+  {
+    "symbol": "ESTC",
+    "website": "https://www.elastic.co/",
+    "careers": "https://www.elastic.co/careers",
+    "industry": "Cloud & cybersecurity",
+    "adapter": "greenhouse",
+    "board": "elastic",
+    "evidence": "https://job-boards.greenhouse.io/elastic/jobs/6804813"
+  },
+  {
+    "symbol": "DOCN",
+    "website": "https://www.digitalocean.com/",
+    "careers": "https://www.digitalocean.com/careers",
+    "industry": "Cloud & cybersecurity"
+  },
+  {
+    "symbol": "TWLO",
+    "website": "https://www.twilio.com/",
+    "careers": "https://jobs.twilio.com/careers",
+    "industry": "Business software"
+  },
+  {
+    "symbol": "SNOW",
+    "website": "https://www.snowflake.com/",
+    "careers": "https://careers.snowflake.com/",
+    "industry": "Business software"
+  },
+  {
+    "symbol": "ASAN",
+    "website": "https://asana.com/",
+    "careers": "https://asana.com/jobs/all",
+    "industry": "Business software"
+  },
+  {
+    "symbol": "PATH",
+    "website": "https://www.uipath.com/",
+    "careers": "https://www.uipath.com/company/careers",
+    "industry": "Business software"
+  },
+  {
+    "symbol": "RBLX",
+    "website": "https://corp.roblox.com/",
+    "careers": "https://careers.roblox.com/jobs",
+    "industry": "Media & entertainment"
+  },
+  {
+    "symbol": "SHOP",
+    "website": "https://www.shopify.com/",
+    "careers": "https://www.shopify.com/careers",
+    "industry": "Commerce"
+  },
+  {
+    "symbol": "TDOC",
+    "website": "https://www.teladochealth.com/",
+    "careers": "https://careers.teladochealth.com/",
+    "industry": "Healthcare"
+  },
+  {
+    "symbol": "CVS",
+    "website": "https://www.cvshealth.com/",
+    "careers": "https://jobs.cvshealth.com/",
+    "industry": "Healthcare"
+  }
+]

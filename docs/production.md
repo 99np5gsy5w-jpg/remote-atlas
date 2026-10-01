@@ -1,0 +1,17 @@
+# Path from the GitHub prototype to subscriptions
+
+GitHub is the source and automation home. The deployed Pages edition is free and stores resume/cover-letter files only on each visitor's device. Cloud accounts, payment collection and cross-device resume storage are not enabled.
+
+Before a paid launch:
+
+1. Use a suitable application host. The included Worker/Vinext source is one starting point; the static React app can also be deployed to another host. GitHub Pages cannot host commercial SaaS.
+2. Add authenticated customer accounts. For an independent commercial deployment, Supabase Auth plus Postgres and private Storage is a practical option. For a private Sites deployment, the bundled dispatch-auth helpers and D1/R2 bindings are alternatives. Never trust authentication headers from the open Internet; they are valid only behind the platform that verifies and sets them.
+3. Put resumes and cover letters in private object storage, with a per-user key prefix and enforced ownership checks on every read, update and delete. Keep extracted text in a user-scoped table with row-level security. Do not put documents, email addresses or access tokens in the public job catalog, GitHub repository, workflow cache, logs or build artifacts.
+4. Accept only bounded PDF, DOCX and TXT uploads, validate magic bytes and structure, cap decompressed size/pages, use attachment downloads and sandboxed parsers. Add malware scanning for server uploads. Set explicit retention and account deletion behavior, including backups. Do not process resumes through third-party models without a disclosed opt-in.
+5. Serve the job catalog from a database API with indexes on status, last-seen date, country, seniority, industry and salary currency/period. The prototype loads one static JSON catalog; move search server-side before the payload reaches tens of megabytes. Preserve original currency and pay period. Do not label missing fields as zero or invent worldwide eligibility.
+6. Deploy the GitHub Actions crawler using least-privilege, scoped ingestion credentials. Upload public jobs and per-source completion markers to the backend. Keep secrets in Actions Secrets. Retry idempotently; retire jobs only after complete enumerations. Reject arbitrary fetch URLs supplied by visitors.
+7. Add Stripe Checkout/Billing and a signature-verified, replay-safe webhook. Enforce entitlements on the server; never trust a browser flag or redirect from checkout as proof of payment. Define cancellation/refund policies and tax handling before collecting money.
+8. Benchmark a full source cycle. Measure actual success coverage, job freshness, employer identity accuracy, duplicate rate, request counts, compute, bytes, support hours and failed adapter churn. Use licensed sources or obtain permission when a source is blocked. Do not evade a login, CAPTCHA or robots restriction.
+9. Publish measurable coverage and freshness. The supplied files contain security listings, not a complete global employer census. Add a Nasdaq-listed input if that is desired, verify fund sponsors, resolve duplicate issuers and fill in industry metadata. Unknown values should stay visibly unknown.
+
+The repository includes a development starter for an alternative Worker deployment but it is not currently provisioned or advertised as an active private cloud backend. The GitHub Pages build uses `vite.pages.config.ts` and does not bundle the starter's server authentication helpers.
